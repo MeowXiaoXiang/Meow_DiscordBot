@@ -1,0 +1,23 @@
+"""
+Meow Discord Bot Module
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is the area for various modules used by the Meow Discord Bot.
+
+Includes:
+
+time_utils.py: This deals with operations related to UTC+8 time.
+pagination.py: This is a pagination program imported from pycord, with minor modifications for direct integration.
+"""
+
+# time_utils.py
+
+from .time_utils import TimeUtils
+
+# pagination.py
+
+from .pagination import PaginatorButton
+from .pagination import Page
+from .pagination import PageGroup
+from .pagination import Paginator
+from .pagination import PaginatorMenu
