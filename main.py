@@ -6,14 +6,13 @@ from replit import db # replit.com 專用的
 #---------------------Logger and Time------------------------------
 from loguru import logger
 from datetime import datetime
-
 #--------------------------Type------------------------------------
 from typing import List
 #--------------------------Other-----------------------------------
 import os
 import sys
 import json
-import subprocess
+import keep_alive
 #------------------------------------------------------------------
 version = "v2.0.0"
 start_time = datetime.now()
@@ -229,8 +228,7 @@ class Button_View(discord.ui.View):
 def restart_bot_exec():
     python_executable = sys.executable
     script_path = os.path.abspath(sys.argv[0])
-    subprocess.call([python_executable, script_path])
-    sys.exit()
+    os.execv(python_executable, [python_executable, script_path])
 
 async def on_disconnect():
     logger.info('機器人已關閉')
@@ -253,8 +251,9 @@ def set_logger():
 
 if __name__ == '__main__':
     set_logger()
+    keep_alive.awake('http://<project_name>.<username>.repl.co', False)
     MEOW = Meow_DiscordBot()
     try:
-        MEOW.run(Imp_parm['TOKEN'])
+        MEOW.run(os.environ['TOKEN'])
     except Exception as e:
         logger.critical(str(e))

@@ -166,11 +166,11 @@ class event(commands.Cog):
         try:
             if msg.channel.id in self.settings['record_channels']:
                 log_path = f'./message_log/{msg.guild}-{msg.channel}.log'
-                print(F"[訊息紀錄中]{self.time_utils.get_utc8_ch()}{msg.author}說:{msg.content}\n")
+                print(F"[訊息紀錄中]{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說：\n{msg.content}\n")
                 with open(log_path, 'a', encoding='utf8') as fp:
-                    fp.write(F"{self.time_utils.get_utc8_ch()}{msg.author}說:{msg.content}\n")
+                    fp.write(F"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
             else:
-                print(F"{self.time_utils.get_utc8_ch()}{msg.author}說:{msg.content}\n")
+                print(F"{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說:{msg.content}\n")
         except Exception as e:
             logger.error(F"Error in log_text_channel_message: {e}")
 
