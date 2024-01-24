@@ -1,0 +1,10 @@
+{
+    "guild_id": ,
+    "admin_roles": [],
+    "record_channels": [],
+    "auto_replay_channels": [],
+    "auto_replay_cooldown": ,
+    "emoji_record_cooldown": ,
+    "auto_reaction_add": ,
+	"TOKEN": ""
+}

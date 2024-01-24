@@ -9,7 +9,6 @@ from typing import Optional
 from loguru import logger
 from module import TimeUtils
 #---------------------------Other----------------------------------
-import os
 import re
 import time
 import json
@@ -21,31 +20,15 @@ class event(commands.Cog):
         self.bot = bot
         self.time_utils = TimeUtils()
         self.owner = self.bot.get_user(self.bot.owner_id)
-        with open('auto_reply_message.json', 'r', encoding='utf8') as f:
-            self.auto_reply_message = json.load(f)
-        
-        self.auto_replay_cooldown = self.get_env_var('AUTO_REPLAY_COOLDOWN', 5)
-        self.emoji_record_cooldown = self.get_env_var('EMOJI_RECORD_COOLDOWN', 5)
-        self.auto_replay_channels = self.get_env_var('AUTO_REPLAY_CHANNELS', '', is_list=True)
-        
-        self.timer_auto_reply = time.time() - self.auto_replay_cooldown
-        self.timer_msg_emoji = time.time() - self.emoji_record_cooldown
-        self.timer_reaction_add = time.time() - self.emoji_record_cooldown
+        self.settings = json.load(open("setting.json", "r", encoding="utf8")) #讀取 setting.json
+        self.auto_reply_message = json.load(open("auto_reply_message.json", "r", encoding="utf8")) # 讀取 auto_reply_message.json
+        self.timer_auto_reply = time.time() - int(self.settings['auto_replay_cooldown'])
+        self.timer_msg_emoji = time.time() - int(self.settings['emoji_record_cooldown'])
+        self.timer_reaction_add = time.time() - int(self.settings['emoji_record_cooldown'])
         self.private_chat_user = None
         self.supported_image_formats = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
         self.supported_video_formats = ['.mp4', '.webm', '.mov', '.avi', '.mkv']
 
-    def get_env_var(self, var_name, default, is_list=False):
-        try:
-            var_value = os.getenv(var_name, default)
-            if is_list:
-                return [int(channel) for channel in var_value.split(',')] if var_value else []
-            else:
-                return int(var_value)
-        except ValueError:
-            logger.error(f"環境變數 '{var_name}' 格式不正確，自動設定成{default}。")
-            return default if not is_list else []
-        
     @commands.Cog.listener(
     )  #若你是在main.py的話 會是bot.event 就 接收事件的 但是現在再cog內得寫成cog.listener
     async def on_message(self, msg):  #msg on_message下機器人看到的訊息
@@ -181,29 +164,26 @@ class event(commands.Cog):
 
     def log_text_channel_message(self, msg):
         try:
-            record_channels = os.getenv('RECORD_CHANNELS')
-            if record_channels:
-                record_channels = [int(channel_id) for channel_id in record_channels.split(',')]
-                if msg.channel.id in record_channels:
-                    log_path = f'./message_log/{msg.guild}-{msg.channel}.log'
-                    print(F"[訊息紀錄中]{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說：\n{msg.content}\n")
-                    with open(log_path, 'a', encoding='utf8') as fp:
-                        fp.write(F"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
-                else:
-                    print(F"{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說:{msg.content}\n")
+            if msg.channel.id in self.settings['record_channels']:
+                log_path = f'./message_log/{msg.guild}-{msg.channel}.log'
+                print(F"[訊息紀錄中]{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說：\n{msg.content}\n")
+                with open(log_path, 'a', encoding='utf8') as fp:
+                    fp.write(F"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
+            else:
+                print(F"{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說:{msg.content}\n")
         except Exception as e:
             logger.error(F"Error in log_text_channel_message: {e}")
 
     async def handle_mentions(self, msg):
         if self.bot.user in msg.mentions:
-            await msg.add_reaction(self.bot.get_emoji(int(os.getenv('AUTO_REACTION_ADD'))))
+            await msg.add_reaction(self.bot.get_emoji(int(self.settings['auto_reaction_add'])))
 
     async def process_auto_reply(self, msg):
         try:
             if msg.author != self.bot.user:
                 for key in self.auto_reply_message.keys():
-                    if key == msg.content and msg.channel.id in self.auto_replay_channels:
-                        if time.time() - self.timer_auto_reply > self.auto_replay_cooldown:
+                    if key == msg.content and msg.channel.id in self.settings['auto_replay_channels']:
+                        if time.time() - self.timer_auto_reply > int(self.settings['auto_replay_cooldown']):
                             self.timer_auto_reply = time.time()   
                             await msg.channel.send(self.auto_reply_message[key])
         except Exception as e:
@@ -220,7 +200,7 @@ class event(commands.Cog):
                         conn = connect_db()
                         emoji_count = get_key(conn, emoji_id)
                         if emoji_count is not None:
-                            if time.time() - self.timer_msg_emoji > self.emoji_record_cooldown:
+                            if time.time() - self.timer_msg_emoji > int(self.settings['emoji_record_cooldown']):
                                 self.timer_msg_emoji = time.time()
                                 set_key(conn, emoji_id, emoji_count + 1)
                                 print(F"{emoji_id} 表情 使用次數 + 1\n")
@@ -243,7 +223,7 @@ class event(commands.Cog):
                         conn = connect_db()
                         emoji_count = get_key(conn, emoji_id)
                         if emoji_count is not None:
-                            if time.time() - self.timer_reaction_add > self.emoji_record_cooldown:
+                            if time.time() - self.timer_reaction_add > int(self.settings['emoji_record_cooldown']):
                                 self.timer_reaction_add = time.time()
                                 set_key(conn, emoji_id, emoji_count + 1)
                                 print(F"{emoji_id} 表情 使用次數 + 1 (訊息附加)\n")

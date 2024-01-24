@@ -37,13 +37,13 @@ pip install -r requirements.txt
 ## 設定部分
 
 - `auto_reply_message.json`：此檔案用於設定機器人的自動回應訊息。當機器人接收到特定訊息時，會根據此檔案的設定回應對應的訊息。請使用 JSON 格式來設定。
-- `.env` 檔案：
+- `setting.json` 檔案，除了TOEKN使用字串外，其他請都使用整數：
 
-  - `GUILD_ID`：請在此處填入你的伺服器 ID。
-  - `ADMIN_ROLES`：請在此處填入管理員的身分組 ID，多個 ID 請使用逗號隔開。
-  - `RECORD_CHANNELS`：請在此處填入你希望機器人記錄訊息的頻道 ID，多個 ID 請使用逗號隔開。
-  - `AUTO_REPLAY_CHANNELS`：請在此處填入你希望機器人自動回應訊息的頻道 ID，多個 ID 請使用逗號隔開。
-  - `AUTO_REPLAY_COOLDOWN`：設定機器人自動回應訊息的冷卻時間，單位為秒。
-  - `EMOJI_RECORD_COOLDOWN`：設定機器人自動記錄表情使用的冷卻時間，單位為秒。
-  - `AUTO_REACTION_ADD`：設定機器人受到標記時自動添加的表情，請填入表情的 ID。
+  - `guild_id`：請在此處填入你的伺服器 ID。
+  - `admin_roles`：請在此處填入管理員的身分組 ID，多個 ID 請使用逗號隔開。
+  - `record_channels`：請在此處填入你希望機器人記錄訊息的頻道 ID，多個 ID 請使用逗號隔開。
+  - `auto_replay_channels`：請在此處填入你希望機器人自動回應訊息的頻道 ID，多個 ID 請使用逗號隔開。
+  - `auto_replay_cooldown`：設定機器人自動回應訊息的冷卻時間，單位為秒。
+  - `emoji_record_cooldown`：設定機器人自動記錄表情使用的冷卻時間，單位為秒。
+  - `auto_reaction_add`：設定機器人受到標記時自動添加的表情，請填入表情的 ID。
   - `TOKEN`：設定機器人的Discord Bot TOKEN。

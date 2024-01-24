@@ -10,9 +10,13 @@ from datetime import datetime
 from typing import List
 #--------------------------Other-----------------------------------
 import os
+import json
+# import sys
+# import subprocess
 #------------------------------------------------------------------
 version = "v2.1"
 start_time = datetime.now()
+Imp_parm = json.load(open("setting.json", 'r', encoding='utf8')) #讀取你的setting.json
 #------------------------------------------------------------------
 class Meow_DiscordBot(commands.Bot):
     def __init__(self):
@@ -221,8 +225,11 @@ class Button_View(discord.ui.View):
         logger.info("清除資料庫操作被取消")
         await interaction.response.edit_message(view=self)
 
-# def restart_bot_exec(): 
-#     os.execv(sys.executable, ['python'] + sys.argv)
+# def restart_bot_exec():
+#     python_executable = sys.executable
+#     script_path = os.path.abspath(sys.argv[0])
+#     subprocess.call([python_executable, script_path])
+#     sys.exit()
 
 async def on_disconnect():
     logger.info('機器人已關閉')
@@ -247,6 +254,6 @@ if __name__ == '__main__':
     set_logger()
     MEOW = Meow_DiscordBot()
     try:
-        MEOW.run(os.getenv('TOKEN'))
+        MEOW.run(Imp_parm['TOKEN'])
     except Exception as e:
         logger.critical(str(e))

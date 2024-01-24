@@ -16,7 +16,7 @@ class Emoji_Pages(commands.Cog):
         self.update_cache_task.start()
     
     def cog_unload(self):
-        self.update_cache_task.cancel()  # 卸載Cog時取消定時任務。
+        self.update_cache_task.cancel()  # 卸載Cog時取消定時任務
 
     @tasks.loop(hours=2)
     async def update_cache_task(self):
@@ -67,7 +67,7 @@ class Emoji_Pages(commands.Cog):
                 ),
                 ephemeral=True
             )
-            return
+            return  # 提前返回，不執行後面的程式碼
 
         try:
             emoji_data = [self.gen_page(i) for i in range(1, math.ceil(len(self.get_emoji_data()[0])/25)+1)]
