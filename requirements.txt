@@ -1,0 +1,5 @@
+discord==2.3.2
+loguru
+pillow==10.0.0
+requests
+PyNaCl
