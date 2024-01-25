@@ -202,28 +202,35 @@ class Button_View(discord.ui.View):
         super().__init__(timeout=None) # timeout of the view must be set to None
         self.bot = bot
 
+    def disable_buttons(self):
+        for item in self.children:
+            item.disabled = True
+
     @discord.ui.button(label="確認", custom_id="db_del_confirm", row=0, style=discord.ButtonStyle.success, emoji="✔️") # the button has a custom_id set
     async def database_erase_confirm_callback(self, interaction, button):
         if interaction.user.id == self.bot.owner_id:
+            conn = None
             try:
                 conn = connect_db()
                 delete_all(conn)
-                await interaction.response.send_message(F"清除資料庫完成", ephemeral=True)
-                for item in self.children:
-                    item.disabled = True
-                await interaction.edit_original_response(view=self)
+                self.disable_buttons()
+                logger.info("清除資料庫操作完成")
+                await interaction.response.edit_message(content=F"清除資料庫完成", view=self)
             except Exception as e:
                 logger.error(str(e))
-                await interaction.response.send_message(f"清除時遭遇錯誤，錯誤訊息：\n{str(e)}", ephemeral=True)
+                self.disable_buttons()
+                await interaction.response.edit_message(content=f"清除時遭遇錯誤，錯誤訊息：\n{str(e)}", view=self)
+            finally:
+                if conn:
+                    conn.close()
         else:
             await interaction.response.send_message("您並不是機器人擁有者請勿使用此功能", ephemeral=True)
 
     @discord.ui.button(label="取消", custom_id="db_del_cancel", row=0, style=discord.ButtonStyle.secondary, emoji="❌") # the button has a custom_id set
     async def database_erase_cancel_callback(self, interaction, button):
-        for item in self.children:
-            item.disabled = True
+        self.disable_buttons()
         logger.info("清除資料庫操作被取消")
-        await interaction.response.edit_message(view=self)
+        await interaction.response.edit_message(content="清除資料庫操作被取消", view=self)
 
 # def restart_bot_exec():
 #     python_executable = sys.executable

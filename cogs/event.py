@@ -198,7 +198,8 @@ class event(commands.Cog):
                     if emoji:
                         emoji_id = target.split(':')[2][:-1]
                         conn = connect_db()
-                        emoji_count = get_key(conn, emoji_id)
+                        key_value = get_key(conn, emoji_id)
+                        emoji_count = int(key_value[0]) if key_value else None
                         if emoji_count is not None:
                             if time.time() - self.timer_msg_emoji > int(self.settings['emoji_record_cooldown']):
                                 self.timer_msg_emoji = time.time()
@@ -221,7 +222,8 @@ class event(commands.Cog):
                     if self.bot.get_emoji(int(target.split(':')[2][:-1])):
                         emoji_id = target.split(':')[2][:-1]
                         conn = connect_db()
-                        emoji_count = get_key(conn, emoji_id)
+                        key_value = get_key(conn, emoji_id)
+                        emoji_count = int(key_value[0]) if key_value else None
                         if emoji_count is not None:
                             if time.time() - self.timer_reaction_add > int(self.settings['emoji_record_cooldown']):
                                 self.timer_reaction_add = time.time()
