@@ -11,10 +11,8 @@ from typing import List
 #--------------------------Other-----------------------------------
 import os
 import json
-# import sys
-# import subprocess
 #------------------------------------------------------------------
-version = "v2.1"
+version = "v2.1.1"
 start_time = datetime.now()
 Imp_parm = json.load(open("setting.json", 'r', encoding='utf8')) #讀取你的setting.json
 #------------------------------------------------------------------
@@ -92,62 +90,62 @@ class ManagementCommand(commands.Cog):
         extensions = [filename[:-3] for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'cogs')) if filename.endswith('.py')]
         return [
             discord.app_commands.Choice(name=extension, value=extension)
-            for extension in extensions if current.lower() in extension.lower()
+            for extension in extensions if current in extension
         ]
     #-----------------------COG載入重載卸載控制區-------------------------
-    @discord.app_commands.command(name="載入擴展", description="載入`extension`擴展庫")
-    @discord.app_commands.describe(extension="輸入你要載入的`extension`擴展")
+    @discord.app_commands.command(name="載入模組", description="載入`extension`模組庫")
+    @discord.app_commands.describe(extension="輸入你要載入的`extension`模組")
     @discord.app_commands.autocomplete(extension=extension_autocomplete)
     async def load(self, interaction: discord.Interaction, extension: str):
         if interaction.user.id == self.bot.owner_id:
             try:
                 await self.bot.load_extension(F'cogs.{extension}')
-                await interaction.response.send_message(embed=discord.Embed(title="已加載擴展", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
-                logger.info(F"已加載：{extension}")
+                await interaction.response.send_message(embed=discord.Embed(title="已載入模組", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
+                logger.info(F"已載入：{extension}")
             except commands.ExtensionAlreadyLoaded:
-                await interaction.response.send_message(embed=discord.Embed(title="警告：擴展已經載入", description=f"擴展 `{extension}` 已經載入過，請使用重新載入或卸載", color=0xffff00), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="警告：模組已經載入", description=f"模組 `{extension}` 已經載入過，請使用重新載入或卸載", color=0xffff00), ephemeral=True)
                 logger.warning(F"已經載入過：{extension}")
             except commands.ExtensionNotFound:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：擴展不存在", description=f"找不到指定的擴展 `{extension}`請檢查是否存在", color=0xff0000), ephemeral=True)
-                logger.error(F"找不到擴展：{extension}")
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：模組不存在", description=f"找不到指定的模組 `{extension}`請檢查是否存在", color=0xff0000), ephemeral=True)
+                logger.error(F"找不到模組：{extension}")
             except Exception as e:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：載入擴展時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：載入模組時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
                 logger.error(F"未知錯誤：{e}")
         else:
             await interaction.response.send_message(embed=discord.Embed(title="權限不足", description="本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
 
-    @discord.app_commands.command(name="卸載擴展", description="卸載`extension`擴展庫")
-    @discord.app_commands.describe(extension = "輸入你要卸載的`extension`擴展")
+    @discord.app_commands.command(name="卸載模組", description="卸載`extension`模組庫")
+    @discord.app_commands.describe(extension = "輸入你要卸載的`extension`模組")
     @discord.app_commands.autocomplete(extension=extension_autocomplete)
     async def unload(self, interaction: discord.Interaction, extension: str):
         if interaction.user.id == self.bot.owner_id:
             try:
                 await self.bot.unload_extension(F'cogs.{extension}')
-                await interaction.response.send_message(embed=discord.Embed(title="已卸載擴展", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="已卸載模組", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
                 logger.info(F"已卸載：{extension}")
             except commands.ExtensionNotLoaded:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：擴展尚未載入", description=f"請確認擴展 `{extension}`已經載入", color=0xff0000), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：模組尚未載入", description=f"請確認模組 `{extension}`已經載入", color=0xff0000), ephemeral=True)
                 logger.error(F"尚未載入：{extension}")
             except Exception as e:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：卸載擴展時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：卸載模組時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
                 logger.error(F"未知錯誤：{e}")
         else:
             await interaction.response.send_message(embed=discord.Embed(title="權限不足", description="本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
 
-    @discord.app_commands.command(name="重新載入擴展", description="重新載入`extension`擴展庫")
-    @discord.app_commands.describe(extension = "輸入你要重新載入的`extension`擴展")
+    @discord.app_commands.command(name="重新載入模組", description="重新載入`extension`模組庫")
+    @discord.app_commands.describe(extension = "輸入你要重新載入的`extension`模組")
     @discord.app_commands.autocomplete(extension=extension_autocomplete)
     async def reload(self, interaction: discord.Interaction, extension: str):
         if interaction.user.id == self.bot.owner_id:
             try:
                 await self.bot.reload_extension(F'cogs.{extension}')
-                await interaction.response.send_message(embed=discord.Embed(title="已重新載入擴展", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="已重新載入模組", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
                 logger.info(F"已重新載入：{extension}")
             except commands.ExtensionNotLoaded:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：擴展尚未載入", description=f"請確認擴展 `{extension}`已經載入", color=0xff0000), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：模組尚未載入", description=f"請確認模組 `{extension}`已經載入", color=0xff0000), ephemeral=True)
                 logger.error(F"尚未載入：{extension}")
             except Exception as e:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：重新載入擴展時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：重新載入模組時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
                 logger.error(F"未知錯誤：{e}")
         else:
             await interaction.response.send_message(embed=discord.Embed(title="權限不足", description=F"本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
@@ -165,15 +163,15 @@ class ManagementCommand(commands.Cog):
         # Add loaded extensions
         exts = [f"- {ext.replace('cogs.', '')}" for ext in self.bot.extensions]
         if len(exts) > 0:
-            embed.add_field(name="已加載擴展", value="\n".join(exts), inline=True)
+            embed.add_field(name="已載入模組", value="\n".join(exts), inline=True)
         else:
-            embed.add_field(name="已加載擴展", value="目前沒有任何擴展", inline=True)
+            embed.add_field(name="已載入模組", value="目前沒有任何模組", inline=True)
         # Add available extensions
         all_exts = [f"- {filename[:-3]}" for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'cogs')) if filename.endswith('.py')]
         if len(all_exts) > 0:
-            embed.add_field(name="可用擴展", value="\n".join(all_exts), inline=True)
+            embed.add_field(name="可用模組", value="\n".join(all_exts), inline=True)
         else:
-            embed.add_field(name="可用擴展", value="找不到任何擴展", inline=True)
+            embed.add_field(name="可用模組", value="找不到任何模組", inline=True)
         # Add uptime
         embed.add_field(name="在線時間", value=f"<t:{int(start_time.timestamp())}:R>", inline=False)
         # Add author
@@ -188,14 +186,6 @@ class ManagementCommand(commands.Cog):
             await interaction.response.send_message("確定真的要清除?", view=Button_View(self.bot), ephemeral=True)
         else:
             await interaction.response.send_message('你並不是擁有者 不能使用這個指令', ephemeral=True)
-
-    # @discord.app_commands.command(name="重啟機器人", description="重啟機器人，僅限維護與管理者")
-    # async def restart_bot(self, interaction: discord.Interaction):
-    #     if interaction.user.id == self.bot.owner_id:
-    #         await interaction.response.send_message('正在重啟', ephemeral=True)
-    #         restart_bot_exec()
-    #     else:
-    #         await interaction.response.send_message('你並不是擁有者 不能使用這個指令', ephemeral=True)
 
 class Button_View(discord.ui.View):
     def __init__(self, bot):
@@ -231,12 +221,6 @@ class Button_View(discord.ui.View):
         self.disable_buttons()
         logger.info("清除資料庫操作被取消")
         await interaction.response.edit_message(content="清除資料庫操作被取消", view=self)
-
-# def restart_bot_exec():
-#     python_executable = sys.executable
-#     script_path = os.path.abspath(sys.argv[0])
-#     subprocess.call([python_executable, script_path])
-#     sys.exit()
 
 async def on_disconnect():
     logger.info('機器人已關閉')
