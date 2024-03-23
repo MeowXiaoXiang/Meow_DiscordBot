@@ -12,13 +12,13 @@ from typing import List
 import os
 import json
 #------------------------------------------------------------------
-version = "v2.1.1"
+version = "v2.1.2"
 start_time = datetime.now()
 Imp_parm = json.load(open("setting.json", 'r', encoding='utf8')) #讀取你的setting.json
 #------------------------------------------------------------------
 class Meow_DiscordBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned, intents=discord.Intents.all())
+        super().__init__(command_prefix=commands.when_mentioned_or("-"), intents=discord.Intents.all())
         self.help_command = None
     #-------------當機器人準備好 會設定自己的狀態和提示已經READY!------
     async def on_ready(self):

@@ -6,53 +6,53 @@ import re
 #------------------------------------------------------------------
 
 class calc(commands.Cog):
+    LEGAL = re.compile(r'^[\.\de\+\-\*/% \(\)]*$')
+    SYMBOL = re.compile('(%s)' % '|'.join(['[\d]+e[\+\-][\d]+', '[\d\.]+', '\+', '\-', '\*', '/', '%', '\(', '\)']))
+
     def __init__(self, bot):
         self.bot = bot 
-        self.legal = re.compile(r'^[\.\de\+\-\*/% \(\)]*$')
-        symbol_list = ['[\d]+e[\+\-][\d]+', '[\d\.]+', '\+', '\-', '\*', '/', '%', '\(', '\)']
-        self.symbol = re.compile('(%s)' % '|'.join(symbol_list))
-        
+
+    @commands.command(name='calc', aliases=['計算機' , '計算'], brief="簡易的四則運算", description=f"簡易的四則運算(支援: + - * / ( ) 小數 科學記號e=10^)\n中間不能有空格 不支援指數運算\n使用方法：-calc [數學算式]")
+    async def calc_c(self,ctx, *args):
+        msg = self.calculate(' '.join(args))
+        await ctx.send(msg)
+
     @discord.app_commands.command(name="計算", description="簡易的四則運算")
     @discord.app_commands.describe(
         expression="輸入要計算的數學表達式，支援 + - * / ( ) 小數 科學記號e=10^"
     )
     @discord.app_commands.rename(expression="數學表達式")
     async def calc(self, interaction: discord.Interaction, expression: str):
-        await interaction.response.send_message(self.Calculation(expression))
-        
-    def Calculation(self, expr):
-        try:
-            if "亞玄" in expr: # 友人要求
-                return '計算結果：%s = %s' % (' '.join(expr).replace('( ', '(').replace(' )', ')').replace('+',' + ').replace('+',' + ').replace('-',' - ').replace('*',' * ').replace('/',' / '), "超級亞玄")
-            self._is_easy(expr)
-            self._no_exp(expr)
-            self._is_calculable(expr)
-            return '計算結果：%s = %s' % (self._pretty_expr(expr), str(eval(expr)).upper())
-        except Exception as e:
-            return str(e)
-        
-    def _pretty_expr(self, expr):
-        result = self.symbol.findall(expr)
-        return ' '.join(result).replace('( ', '(').replace(' )', ')')
+        await interaction.response.send_message(self.calculate(expression))
 
-    def _is_easy(self, expr):
-        if self.legal.match(expr) is None:
-            raise calc.NotEasyExpression()
-        return True
+    def calculate(self, expr):
+        if "亞玄" in expr: # 友人要求
+            return '計算結果：%s = %s' % (expr, "超級亞玄".upper())
+        self.check_expression(expr)
+        result = self.evaluate_expression(expr)
+        return self.format_result(expr, result)
 
-    def _no_exp(self, expr):
+    def check_expression(self, expr):
+        if self.LEGAL.match(expr) is None:
+            raise self.NotEasyExpression()
         if '**' in expr:
-            raise calc.ExponentNotAllowed()
-        return True
-
-    def _is_calculable(self, expr):
+            raise self.ExponentNotAllowed()
         try:
             exec(expr)
-            return True
         except ZeroDivisionError:
-            raise calc.DividByZero()
+            raise self.DividByZero()
         except:
-            raise calc.NotCalculable()
+            raise self.NotCalculable()
+
+    def evaluate_expression(self, expr):
+        result = eval(expr)
+        if isinstance(result, float):
+            result = round(result, 3)
+        return result
+
+    def format_result(self, expr, result):
+        pretty_expr = ' '.join(self.SYMBOL.findall(expr)).replace('( ', '(').replace(' )', ')')
+        return '計算結果：%s = %s' % (pretty_expr, str(result).upper())
 
     class NotEasyExpression(Exception):
         def __str__(self):
