@@ -6,8 +6,8 @@ import re
 #------------------------------------------------------------------
 
 class calc(commands.Cog):
-    LEGAL = re.compile(r'^[\.\de\+\-\*/% \(\)]*$')
-    SYMBOL = re.compile('(%s)' % '|'.join(['[\d]+e[\+\-][\d]+', '[\d\.]+', '\+', '\-', '\*', '/', '%', '\(', '\)']))
+    LEGAL = re.compile(r'^[\.\de\+\-\*/% \(\)亞玄]*$')
+    SYMBOL = re.compile('(%s)' % '|'.join(['[\d]+e[\+\-][\d]+', '[\d\.]+', '\+', '\-', '\*', '/', '%', '\(', '\)', '亞玄']))
 
     def __init__(self, bot):
         self.bot = bot 
@@ -26,11 +26,15 @@ class calc(commands.Cog):
         await interaction.response.send_message(self.calculate(expression))
 
     def calculate(self, expr):
-        if "亞玄" in expr: # 友人要求
-            return '計算結果：%s = %s' % (expr.upper(), "超級亞玄")
-        self.check_expression(expr)
-        result = self.evaluate_expression(expr)
-        return self.format_result(expr, result)
+        try:
+            if "亞玄" in expr: # 友人要求
+                result = "超級亞玄"
+            else:
+                self.check_expression(expr)
+                result = self.evaluate_expression(expr)
+            return self.format_result(expr, result)
+        except Exception as e:
+            return str(e)
 
     def check_expression(self, expr):
         if self.LEGAL.match(expr) is None:
