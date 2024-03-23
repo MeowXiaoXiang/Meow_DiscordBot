@@ -27,7 +27,7 @@ class calc(commands.Cog):
 
     def calculate(self, expr):
         if "亞玄" in expr: # 友人要求
-            return '計算結果：%s = %s' % (expr, "超級亞玄".upper())
+            return '計算結果：%s = %s' % (expr.upper(), "超級亞玄")
         self.check_expression(expr)
         result = self.evaluate_expression(expr)
         return self.format_result(expr, result)
