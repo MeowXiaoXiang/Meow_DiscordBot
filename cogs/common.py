@@ -2,8 +2,7 @@
 import discord
 from discord.ext import commands
 #--------------------------module----------------------------------
-from module import TimeUtils
-from module import Paginator
+from module import TimeUtils, Paginator
 #--------------------------Type------------------------------------
 from typing import Optional, Union
 #--------------------------Other-----------------------------------

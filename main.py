@@ -12,7 +12,7 @@ from typing import List
 import os
 import json
 #------------------------------------------------------------------
-version = "v2.1.2"
+version = "v2.1.3"
 start_time = datetime.now()
 Imp_parm = json.load(open("setting.json", 'r', encoding='utf8')) #讀取你的setting.json
 #------------------------------------------------------------------
@@ -154,30 +154,33 @@ class ManagementCommand(commands.Cog):
     async def status(self, interaction: discord.Interaction):
         embed = discord.Embed(title="目前機器人的狀態", description="以下是機器人目前的一些狀態資訊", color=discord.Color.blue())
         embed.add_field(name="目前延遲", value=f"{round(self.bot.latency*1000)}ms", inline=False)
+    
+        def add_field(name, values, inline=True):
+            if len(values) > 0:
+                for i in range(0, len(values), 10):
+                    embed.add_field(name=name if i == 0 else '\u200b', value="\n".join(values[i:i+10]), inline=inline)
+            else:
+                embed.add_field(name=name, value="目前沒有任何資訊", inline=inline)
+    
         # Add permissions
         perms = [f"- {name}" for name, value in interaction.channel.permissions_for(interaction.user) if value == True]
-        if len(perms) > 0:
-            embed.add_field(name="機器人目前擁有的權限", value="\n".join(perms), inline=True)
-        else:
-            embed.add_field(name="機器人目前擁有的權限", value="目前沒有任何權限", inline=True)
-        # Add loaded extensions
-        exts = [f"- {ext.replace('cogs.', '')}" for ext in self.bot.extensions]
-        if len(exts) > 0:
-            embed.add_field(name="已載入模組", value="\n".join(exts), inline=True)
-        else:
-            embed.add_field(name="已載入模組", value="目前沒有任何模組", inline=True)
-        # Add available extensions
-        all_exts = [f"- {filename[:-3]}" for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'cogs')) if filename.endswith('.py')]
-        if len(all_exts) > 0:
-            embed.add_field(name="可用模組", value="\n".join(all_exts), inline=True)
-        else:
-            embed.add_field(name="可用模組", value="找不到任何模組", inline=True)
+        add_field("機器人目前擁有的權限", perms, inline=True)
+    
+        # Add extensions
+        all_exts = [filename[:-3] for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'cogs')) if filename.endswith('.py')]
+        loaded_exts = [ext.replace('cogs.', '') for ext in self.bot.extensions]
+        exts = [f"- {ext} {'✅' if ext in loaded_exts else '❌'}" for ext in all_exts]
+        add_field("模組狀態", exts, inline=False)
+    
         # Add uptime
         embed.add_field(name="在線時間", value=f"<t:{int(start_time.timestamp())}:R>", inline=False)
+    
         # Add author
-        embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar.url)
+        embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.display_avatar.url)
+    
         # Add footer
         embed.set_footer(text=f"目前 Discord Bot 的版本：{version}")
+    
         await interaction.response.send_message(embed=embed)
 
     @discord.app_commands.command(name="重設機器人資料庫", description="清除資料庫，讓機器人重新紀錄表情符號的資訊")

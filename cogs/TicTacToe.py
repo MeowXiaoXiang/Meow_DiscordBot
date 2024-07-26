@@ -1,6 +1,9 @@
+#--------------------------Discord---------------------------------
 import discord
 from discord.ext import commands
+#--------------------------Async-----------------------------------
 import asyncio
+#------------------------------------------------------------------
 
 class TicTacToe(commands.Cog):
     def __init__(self, bot):
