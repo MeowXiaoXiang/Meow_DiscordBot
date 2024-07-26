@@ -1,6 +1,6 @@
 # Meow_DiscordBot
 
-![Python 3.10](https://img.shields.io/badge/Python-3.10-blue?logo=python) ![License MIT](https://img.shields.io/badge/License-MIT-green) ![Version v2.1](https://img.shields.io/badge/Version-v2.1.1-orange)
+![Python 3.10](https://img.shields.io/badge/Python-3.10-blue?logo=python) ![License MIT](https://img.shields.io/badge/License-MIT-green) ![Version v2.1.3](https://img.shields.io/badge/Version-v2.1.3-orange)
 
 ## 介紹
 
