@@ -16,11 +16,7 @@ emoji_database.py: This module handles operations related to the emoji database.
 from .time_utils import TimeUtils
 
 # pagination.py
-from .pagination import PaginatorButton
-from .pagination import Page
-from .pagination import PageGroup
-from .pagination import Paginator
-from .pagination import PaginatorMenu
+from .pagination import PaginatorButton, Page, PageGroup, Paginator, PaginatorMenu
 
 # emoji_database.py
 from .database import connect_db, set_key, get_key, get_all_emoji_info, delete_all

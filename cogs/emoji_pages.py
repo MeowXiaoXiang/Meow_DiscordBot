@@ -21,16 +21,15 @@ class Emoji_Pages(commands.Cog):
     @tasks.loop(hours=2)
     async def update_cache_task(self):
         total = 0
-        dict = {}
+        emoji_dict = {}
         conn = connect_db()
         rows = get_all_emoji_info(conn)  # 使用 get_all_emoji_info 函數來獲取所有的表情符號資訊
         for row in rows:
-            key = str(row[0])
-            value = str(row[1])
-            if key.isdigit() and value.isdigit():
-                dict[int(key)] = int(value)
-                total += int(value)
-        sort_data = sorted(dict.items(), key=lambda x: x[1], reverse=True)
+            key = int(row[0])
+            value = int(row[1])
+            emoji_dict[key] = value
+            total += value
+        sort_data = sorted(emoji_dict.items(), key=lambda x: x[1], reverse=True)
         self.cache['emoji_data'] = sort_data, total
 
     def get_emoji_data(self):

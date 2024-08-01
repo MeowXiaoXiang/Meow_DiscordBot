@@ -12,7 +12,7 @@ from typing import List
 import os
 import json
 #------------------------------------------------------------------
-version = "v2.1.3"
+version = "v2.1.4"
 start_time = datetime.now()
 Imp_parm = json.load(open("setting.json", 'r', encoding='utf8')) #讀取你的setting.json
 #------------------------------------------------------------------

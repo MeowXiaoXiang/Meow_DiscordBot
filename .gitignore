@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#database
+emoji_database.db
+
 # C extensions
 *.so
 

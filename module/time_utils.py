@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 class TimeUtils:
     TIME_DELTA = timedelta(hours=+8)
@@ -8,7 +8,7 @@ class TimeUtils:
         """
         取得目前 UTC+8 時區的時間。
         """
-        return datetime.utcnow() + cls.TIME_DELTA
+        return datetime.now(timezone.utc) + cls.TIME_DELTA
 
     @staticmethod
     def format_time(time_obj, format_str):

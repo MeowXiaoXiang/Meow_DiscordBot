@@ -189,49 +189,57 @@ class event(commands.Cog):
         except Exception as e:
             logger.error(F"Error in process_auto_reply: {e}")
 
+    # 提取emoji_id的輔助函數
+    def extract_emoji_id(self, target):
+        try:
+            return int(target.split(':')[2][:-1])
+        except (IndexError, ValueError):
+            return None
+
+    # 直接使用emoji_id紀錄使用次數
     def record_emoji_usage(self, msg):
         try:
-            if msg.author != self.bot.user:
-                target_list = re.findall(r"<:\w+:\d+>", msg.content)
-                for target in target_list:
-                    emoji = self.bot.get_emoji(int(target.split(':')[2][:-1]))
-                    if emoji:
-                        emoji_id = target.split(':')[2][:-1]
-                        conn = connect_db()
-                        key_value = get_key(conn, emoji_id)
-                        emoji_count = int(key_value[0]) if key_value else None
-                        if emoji_count is not None:
-                            if time.time() - self.timer_msg_emoji > int(self.settings['emoji_record_cooldown']):
-                                self.timer_msg_emoji = time.time()
-                                set_key(conn, emoji_id, emoji_count + 1)
-                                print(F"{emoji_id} 表情 使用次數 + 1\n")
+            if msg.author == self.bot.user:
+                return
+            
+            target_list = re.findall(r"<:\w+:\d+>", msg.content)
+            for target in target_list:
+                emoji_id = self.extract_emoji_id(target)
+                if emoji_id is not None:
+                    with connect_db() as session:
+                        key_value = get_key(session, emoji_id)
+                        emoji_count = int(key_value) if key_value else 0
+                        if time.time() - self.timer_msg_emoji > int(self.settings['emoji_record_cooldown']):
+                            self.timer_msg_emoji = time.time()
+                            set_key(session, emoji_id, emoji_count + 1)
+                            print(F"{emoji_id} 表情 使用次數 + 1\n")
                         else:
-                            set_key(conn, emoji_id, 1)
-                            print(F"{emoji_id} 表情 第一次使用欸\n")
+                            set_key(session, emoji_id, 1)
+                            print(F"{emoji_id} 表情 第一次使用\n")
         except Exception as e:
             logger.error(F"Error in record_emoji_usage: {e}")
 
+    # 訊息附加emoji_id紀錄使用次數
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, pl):
         try:
-            if not pl.member:
+            if not pl.member or pl.member.bot:
                 return
-            if not pl.member.bot:
-                target_list = re.findall(r"<:\w+:\d+>", str(pl.emoji))
-                for target in target_list:
-                    if self.bot.get_emoji(int(target.split(':')[2][:-1])):
-                        emoji_id = target.split(':')[2][:-1]
-                        conn = connect_db()
-                        key_value = get_key(conn, emoji_id)
-                        emoji_count = int(key_value[0]) if key_value else None
-                        if emoji_count is not None:
-                            if time.time() - self.timer_reaction_add > int(self.settings['emoji_record_cooldown']):
-                                self.timer_reaction_add = time.time()
-                                set_key(conn, emoji_id, emoji_count + 1)
-                                print(F"{emoji_id} 表情 使用次數 + 1 (訊息附加)\n")
+            
+            target_list = re.findall(r"<:\w+:\d+>", str(pl.emoji))
+            for target in target_list:
+                emoji_id = self.extract_emoji_id(target)
+                if emoji_id is not None:
+                    with connect_db() as session:
+                        key_value = get_key(session, emoji_id)
+                        emoji_count = int(key_value) if key_value else 0
+                        if time.time() - self.timer_reaction_add > int(self.settings['emoji_record_cooldown']):
+                            self.timer_reaction_add = time.time()
+                            set_key(session, emoji_id, emoji_count + 1)
+                            print(F"{emoji_id} 表情 使用次數 + 1 (訊息附加)\n")
                         else:
-                            set_key(conn, emoji_id, 1)
-                            print(F"{emoji_id} 表情 第一次使用欸 (訊息附加)\n")
+                            set_key(session, emoji_id, 1)
+                            print(F"{emoji_id} 表情 第一次使用 (訊息附加)\n")
         except Exception as e:
             logger.error(F"Error in on_raw_reaction_add: {e}")
 
