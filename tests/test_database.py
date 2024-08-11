@@ -2,23 +2,22 @@ import unittest
 import os
 import sys
 
-# 動態add專案根目錄到 sys.path
+# add專案根目錄到 sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # import 資料庫
 from module import connect_db, set_key, get_key, get_all_emoji_info, delete_all
 
 class TestDatabaseOperations(unittest.TestCase):
-
     def setUp(self):
         # 在每個測試之前建立資料庫session
         self.Session = connect_db()
-        self.session = self.Session()
+        self.session = self.Session.__enter__()
         delete_all(self.session)  # 清空資料庫
 
     def tearDown(self):
         # 每個測試之後都關閉資料庫session
-        self.session.close()
+        self.Session.__exit__(None, None, None)
 
     def test_set_and_get_key(self):
         # 測試設定和取得key:value

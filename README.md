@@ -1,12 +1,12 @@
 # Meow_DiscordBot
 
-![Python 3.10](https://img.shields.io/badge/Python-3.10-blue?logo=python) ![License MIT](https://img.shields.io/badge/License-MIT-green) ![Version v2.1.3](https://img.shields.io/badge/Version-v2.1.3-orange)
+![Python 3.10](https://img.shields.io/badge/Python-3.10-blue?logo=python) ![License MIT](https://img.shields.io/badge/License-MIT-green) ![Version v2.2](https://img.shields.io/badge/Version-v2.2-orange)
 
 ## 介紹
 
 "小翔二號機" 是一個專為 Discord 伺服器 "菓之群" 所設計的 Bot。這個名稱的由來是因為我是這個 Bot 的創建者，~~所以我就是一號機。~~
 ~~這個 Bot 目前是運行在 replit.com 上。如果你想要在本地運行這個 Bot，請修改與 replit db 相關的程式碼，並移除 `keep_alive.py`。~~
-目前已經移除`keep_alive.py`已經改成使用`sqlite3`作為資料庫在本地使用
+目前已經移除 `keep_alive.py`已經改成使用 `sqlite3`作為資料庫在本地使用
 
 ## 安裝
 
@@ -25,14 +25,15 @@ pip install -r requirements.txt
 - `help_auto_reply_list`：這個功能可以顯示機器人的自動回應訊息清單。
 - `log_list`：這個功能可以列出所有的對話紀錄。
 - `log_download`：這個功能可以下載指定編號的對話紀錄檔案。
+- `tic_tac_toe`: 這個功能是在 Discord 中進行井字遊戲。玩家使用表情符號進行操作，機器人會管理遊戲狀態和回合，並處理勝負判定。
 
 此外，機器人還會記錄在設定的頻道中的聊天紀錄，並記錄表情符號的使用情況。機器人擁有者可以透過機器人與特定的人進行聊天。
 
 ## 程式碼組件
 
-- `pagination.py`：這是 py-cord 的部件，我簡單改寫了後讓他可以在 discord.py 使用，使用 MIT 授權。
+- `pagination.py`：這是來自 [Pycord](https://github.com/Pycord-Development/pycord/blob/master/discord/ext/pages/pagination.py) 的一個組件，我已經根據需求簡單修改了它，使其能夠在 Discord.py 中使用。主要的修改是移除了對 `discord.ext.bridge.BridgeContext` 的支援，因為 Discord.py 中並不存在該模組。這個修改保留了基本功能並適配了 Discord.py 的使用環境。此檔案仍然遵循 MIT 授權。
 - `time_utils.py`：這是時間相關格式化設計放置的位置。
-- `database.py`：這個檔案包含了所有與資料庫相關的操作，包括建立連接、讀取和寫入資料等。
+- `database.py`：這個檔案包含了所有與 SQLite 資料庫相關的操作，使用 SQLAlchemy 管理 `emoji_info` 表格的建立、讀取、寫入和刪除操作。
 
 ## 設定部分
 
@@ -46,4 +47,4 @@ pip install -r requirements.txt
   - `auto_replay_cooldown`：設定機器人自動回應訊息的冷卻時間，單位為秒。
   - `emoji_record_cooldown`：設定機器人自動記錄表情使用的冷卻時間，單位為秒。
   - `auto_reaction_add`：設定機器人受到標記時自動添加的表情，請填入表情的 ID。
-  - `TOKEN`：設定機器人的Discord Bot TOKEN。
+  - `TOKEN`：設定機器人的 Discord Bot TOKEN。

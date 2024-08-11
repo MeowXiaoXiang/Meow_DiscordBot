@@ -10,8 +10,10 @@ import re
 import math
 import json
 import requests
+import traceback
 from PIL import Image
 from io import BytesIO
+from loguru import logger
 #------------------------------------------------------------------
 
 class Common(commands.Cog):
@@ -107,6 +109,7 @@ class Common(commands.Cog):
                     color=0xff0000
                 ), ephemeral=True
             )
+            logger.error(f"機器人朝頻道發送訊息產生錯誤:{e}\n{traceback.format_exc()}")
 
     @discord.app_commands.command(name="讓機器人朝頻道發送訊息", description="這功能可以讓你以機器人的名義來發送訊息到頻道")
     @discord.app_commands.describe(
@@ -167,6 +170,7 @@ class Common(commands.Cog):
                 ),
                 ephemeral=True
             )
+            logger.error(f"自動回覆訊息清單錯誤:{e}\n{traceback.format_exc()}")
 
 async def setup(bot):
     await bot.add_cog(Common(bot))

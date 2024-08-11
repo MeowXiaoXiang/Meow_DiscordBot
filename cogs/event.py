@@ -9,10 +9,12 @@ from typing import Optional
 from loguru import logger
 from module import TimeUtils
 #---------------------------Other----------------------------------
+import os
 import re
 import time
 import json
 import requests
+import traceback
 #------------------------------------------------------------------
 
 class event(commands.Cog):
@@ -28,9 +30,13 @@ class event(commands.Cog):
         self.private_chat_user = None
         self.supported_image_formats = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
         self.supported_video_formats = ['.mp4', '.webm', '.mov', '.avi', '.mkv']
+        # 檢查並建立 message_log 資料夾
+        if not os.path.exists('message_log'):
+            logger.info('存放訊息紀錄資料夾不存在，正在建立 message_log 資料夾...')
+            os.mkdir('message_log')
+            logger.info('建立成功')
 
-    @commands.Cog.listener(
-    )  #若你是在main.py的話 會是bot.event 就 接收事件的 但是現在再cog內得寫成cog.listener
+    @commands.Cog.listener()  #若你是在main.py的話 會是bot.event 就 接收事件的 但是現在再cog內得寫成cog.listener
     async def on_message(self, msg):  #msg on_message下機器人看到的訊息
         await self.private_chat_handle(msg)
         await self.process_message(msg)
@@ -40,73 +46,39 @@ class event(commands.Cog):
 
     async def private_chat_handle(self, msg):
         try:
-            # 若是機器人自己發的消息，直接 return
             if msg.author == self.bot.user:
-                return  
-            # 若頻道類型是私訊
+                return
+            
             if msg.channel.type == discord.ChannelType.private:
-                # 如果目前沒人聊天，且機器人擁有者發了訊息，得直接return掉，避免產生問題
                 if self.private_chat_user is None and msg.author == self.owner:
                     return
-                # 如果沒有正在聊天的，或記錄的用戶不同，則更新私聊用戶並發送首次對方用戶的資訊
+                
                 if self.private_chat_user is None or self.private_chat_user != msg.author:
                     if msg.author != self.owner:
-                        self.private_chat_user = msg.author  # 更新私聊用户
+                        self.private_chat_user = msg.author
                         await self.owner.send(embed=self.user_DM_information(msg.author))
 
-                # 若不是機器人擁有者發的，那麼訊息當然是給對方的，反之如此也是
-                if msg.author != self.owner:
-                    attachment_links = []  # 儲存附件連結的list
-                    file_attachments = []  # 儲存不支援預覽的附件
-                    # 檢查所有附件url
-                    for attachment in msg.attachments:
-                        # 檢查附件url是否為支援的圖片或影片
-                        is_supported = False
-                        for format in self.supported_image_formats + self.supported_video_formats:
-                            if attachment.url.endswith(format):
-                                attachment_links.append(attachment.url)
-                                is_supported = True
-                                break  # 只增加一次附件url
-                        # 若不支援預覽，則儲存附件
-                        if not is_supported:
-                            file_attachments.append(attachment)
-                    # 發送訊息內容
-                    if msg.content:
-                        await self.owner.send(msg.content)
-                    # 發送附件url
-                    if attachment_links:
-                        await self.owner.send("\n".join(attachment_links))
-                    # 發送不支援預覽的附件
-                    for attachment in file_attachments:
+                recipient = self.owner if msg.author != self.owner else self.private_chat_user
+                
+                if msg.content:
+                    await recipient.send(msg.content)
+                
+                if msg.stickers:
+                    for sticker in msg.stickers:
+                        await recipient.send(sticker.url)
+                
+                for attachment in msg.attachments:
+                    if self.is_supported_format(attachment.url):
+                        await recipient.send(attachment.url)
+                    else:
                         file_size = self.get_attachment_size(attachment.url)
-                        await self.owner.send(embed=self.file_embed(msg.author, attachment, file_size))
-                else:
-                    attachment_links = []  # 儲存附件連結的list
-                    file_attachments = []  # 儲存不支援預覽的附件
-                    # 檢查所有附件url
-                    for attachment in msg.attachments:
-                        # 檢查附件url是否為支援的圖片或影片
-                        is_supported = False
-                        for format in self.supported_image_formats + self.supported_video_formats:
-                            if attachment.url.endswith(format):
-                                attachment_links.append(attachment.url)
-                                is_supported = True
-                                break  # 只增加一次附件url
-                        # 若不支援預覽，則儲存附件
-                        if not is_supported:
-                            file_attachments.append(attachment)
-                    # 發送訊息內容
-                    if msg.content:
-                        await self.private_chat_user.send(msg.content)
-                    # 發送附件url
-                    if attachment_links:
-                        await self.private_chat_user.send("\n".join(attachment_links))
-                    # 發送不支援預覽的附件
-                    for attachment in file_attachments:
-                        file_size = self.get_attachment_size(attachment.url)
-                        await self.private_chat_user.send(embed=self.file_embed(msg.author, attachment, file_size))
+                        if file_size:
+                            await recipient.send(embed=self.file_embed(msg.author, attachment, file_size))
+                        else:
+                            logger.error(f"Failed to retrieve file size for {attachment.url}")
+            
         except Exception as e:
-            logger.error(F"Error in private_chat_handle: {e}")
+            logger.error(f"Error in private_chat_handle: {e}\n{traceback.format_exc()}")
 
     def user_DM_information(self, user):
         embed = discord.Embed(title="新的私聊使用者", description=f"用戶名稱：{user.name}\n用户ID：{user.id}")
@@ -115,17 +87,24 @@ class event(commands.Cog):
 
     def get_attachment_size(self, url):
         try:
-            response = requests.head(url)  # 使用 aiohttp 或 httpx 库进行异步请求
+            response = requests.head(url)
             if 'Content-Length' in response.headers:
-                file_size = int(response.headers['Content-Length'])
-                return file_size
+                return int(response.headers['Content-Length'])
             return None
         except Exception as e:
-            logger.error(F"Error in get_attachment_size: {e}")
+            logger.error(F"Error in get_attachment_size: {e}\n{traceback.format_exc()}")
+
+    def is_supported_format(self, url):
+        try:
+            filename = url.split('/')[-1].split('?')[0]
+            return any(filename.lower().endswith(fmt) for fmt in self.supported_image_formats + self.supported_video_formats)
+        except Exception as e:
+            logger.error(F"Error in is_supported_format: {e}\n{traceback.format_exc()}")
+            return False
 
     def file_embed(self, user, attachment, file_size):
         try:
-            if file_size >= 1024 * 1024:  # 大於1MB 就使用 MB 單位
+            if file_size >= 1024 * 1024:
                 file_size_str = f"%.2f MB" % float(file_size / (1024 * 1024))
             else:
                 file_size_str = f"%.2f KB" % float(file_size / 1024)
@@ -143,7 +122,8 @@ class event(commands.Cog):
             embed.set_footer(text=F"發送時間：{self.time_utils.get_utc8_ch()}")
             return embed
         except Exception as e:
-            logger.error(F"Error in file_embed: {e}")
+            logger.error(F"Error in file_embed: {e}\n{traceback.format_exc()}")
+
     # ----------------------------------------------------------------
 
     async def process_message(self, msg):
@@ -160,7 +140,7 @@ class event(commands.Cog):
             with open(log_path, 'a', encoding='utf8') as fp:
                 fp.write(F"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
         except Exception as e:
-            logger.error(F"Error in log_private_message: {e}")
+            logger.error(F"Error in log_private_message: {e}\n{traceback.format_exc()}")
 
     def log_text_channel_message(self, msg):
         try:
@@ -172,7 +152,7 @@ class event(commands.Cog):
             else:
                 print(F"{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說:{msg.content}\n")
         except Exception as e:
-            logger.error(F"Error in log_text_channel_message: {e}")
+            logger.error(F"Error in log_text_channel_message: {e}\n{traceback.format_exc()}")
 
     async def handle_mentions(self, msg):
         if self.bot.user in msg.mentions:
@@ -187,7 +167,7 @@ class event(commands.Cog):
                             self.timer_auto_reply = time.time()   
                             await msg.channel.send(self.auto_reply_message[key])
         except Exception as e:
-            logger.error(F"Error in process_auto_reply: {e}")
+            logger.error(F"Error in process_auto_reply: {e}\n{traceback.format_exc()}")
 
     # 提取emoji_id的輔助函數
     def extract_emoji_id(self, target):
@@ -217,7 +197,7 @@ class event(commands.Cog):
                             set_key(session, emoji_id, 1)
                             print(F"{emoji_id} 表情 第一次使用\n")
         except Exception as e:
-            logger.error(F"Error in record_emoji_usage: {e}")
+            logger.error(F"Error in record_emoji_usage: {e}\n{traceback.format_exc()}")
 
     # 訊息附加emoji_id紀錄使用次數
     @commands.Cog.listener()
@@ -241,7 +221,7 @@ class event(commands.Cog):
                             set_key(session, emoji_id, 1)
                             print(F"{emoji_id} 表情 第一次使用 (訊息附加)\n")
         except Exception as e:
-            logger.error(F"Error in on_raw_reaction_add: {e}")
+            logger.error(F"Error in on_raw_reaction_add: {e}\n{traceback.format_exc()}")
 
     @discord.app_commands.command(name="設定聊天對象", description="此功能僅限機器人擁有者使用，以及僅限私聊使用，用來設定聊天對象，若不輸入將會重設")
     @discord.app_commands.describe(
@@ -250,22 +230,34 @@ class event(commands.Cog):
     @discord.app_commands.rename(user_id="用戶id")
     async def private_set_userid(self, interaction: discord.Interaction, user_id: Optional[str]):
         try:
-            if interaction.user == self.owner:
-                if user_id:
-                    user = self.bot.get_user(int(user_id))
-                    if user:
-                        self.private_chat_user = user # 若確認user_id是存在就存入，並顯示對方的資訊
-                        await interaction.response.send_message(embed=self.user_DM_information(user), ephemeral=True)
-                    else:
-                        await interaction.response.send_message(embed=discord.Embed(title="錯誤", description="找不到指定的用戶", color=0xff0000), ephemeral=True)
-                else:
-                    self.private_chat_user = None
-                    await interaction.response.send_message(embed=discord.Embed(title="聊天對象已重設", description="私訊聊天對象已經成功重設", color=0x00fff0), ephemeral=True)
-            else:
+            # 檢查是否在私聊中
+            if interaction.channel.type != discord.ChannelType.private:
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤", description="此指令僅限於私聊中使用", color=0xff0000),  ephemeral=True)
+                return
+
+            # 檢查是否是機器人擁有者
+            if interaction.user != self.owner:
                 await interaction.response.send_message(embed=discord.Embed(title="權限不足", description="本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
+                return
+            
+            # 檢查是否輸入機器人自身的 ID
+            if user_id and int(user_id) == self.bot.user.id:
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤", description="不能設定機器人自身為聊天對象", color=0xff0000), ephemeral=True)
+                return
+
+            if user_id:
+                user = self.bot.get_user(int(user_id))
+                if user:
+                    self.private_chat_user = user  # 若確認user_id是存在就存入，並顯示對方的資訊
+                    await interaction.response.send_message(embed=self.user_DM_information(user), ephemeral=True)
+                else:
+                    await interaction.response.send_message(embed=discord.Embed(title="錯誤", description="找不到指定的用戶", color=0xff0000), ephemeral=True)
+            else:
+                self.private_chat_user = None
+                await interaction.response.send_message(embed=discord.Embed(title="聊天對象已重設", description="私訊聊天對象已經成功重設", color=0x00fff0), ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message(embed=discord.Embed(title="錯誤：設定用戶id時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
-            logger.error(F"Error in private_set_userid: {e}")
+            await interaction.response.send_message(embed=discord.Embed(title="錯誤：設定用戶id時發生未知錯誤", description=f"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
+            logger.error(f"Error in private_set_userid: {e}\n{traceback.format_exc()}")
 
 async def setup(bot):
     await bot.add_cog(event(bot))
