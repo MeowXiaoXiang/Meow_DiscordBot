@@ -22,8 +22,8 @@ class event(commands.Cog):
         self.bot = bot
         self.time_utils = TimeUtils()
         self.owner = self.bot.get_user(self.bot.owner_id)
-        self.settings = json.load(open("setting.json", "r", encoding="utf8")) #讀取 setting.json
-        self.auto_reply_message = json.load(open("auto_reply_message.json", "r", encoding="utf8")) # 讀取 auto_reply_message.json
+        self.settings = json.load(open("config/setting.json", "r", encoding="utf8")) #讀取 setting.json
+        self.auto_reply_message = json.load(open("config/auto_reply_message.json", "r", encoding="utf8")) # 讀取 auto_reply_message.json
         self.timer_auto_reply = time.time() - int(self.settings['auto_replay_cooldown'])
         self.timer_msg_emoji = time.time() - int(self.settings['emoji_record_cooldown'])
         self.timer_reaction_add = time.time() - int(self.settings['emoji_record_cooldown'])

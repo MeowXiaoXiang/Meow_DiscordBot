@@ -14,7 +14,7 @@ import traceback
 #------------------------------------------------------------------
 version = "v2.2"
 start_time = datetime.now()
-settings = json.load(open("setting.json", 'r', encoding='utf8')) # 讀取setting.json
+settings = json.load(open("config/setting.json", 'r', encoding='utf8')) # 讀取setting.json
 #------------------------------------------------------------------
 intents = discord.Intents.none()
 # 啟用需要的 Intents 設定成 True

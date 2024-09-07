@@ -19,7 +19,7 @@ from loguru import logger
 class Common(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.auto_reply_data = json.load(open("auto_reply_message.json", "r", encoding="utf8")) # 讀取 auto_reply_message.json
+        self.auto_reply_data = json.load(open("config/auto_reply_message.json", "r", encoding="utf8")) # 讀取 auto_reply_message.json
         self.log_path = './message_log/使用機器人發送的訊息.log'
 
     @discord.app_commands.command(name="查看成員頭貼", description="顯示目標成員的頭貼，可擇一使用選擇用戶或輸入用戶id")

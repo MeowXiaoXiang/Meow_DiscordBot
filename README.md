@@ -37,8 +37,8 @@ pip install -r requirements.txt
 
 ## 設定部分
 
-- `auto_reply_message.json`：此檔案用於設定機器人的自動回應訊息。當機器人接收到特定訊息時，會根據此檔案的設定回應對應的訊息。請使用 JSON 格式來設定。
-- `setting.json` 檔案，除了TOEKN使用字串外，其他請都使用整數：
+- `config/auto_reply_message.json`：此檔案用於設定機器人的自動回應訊息。當機器人接收到特定訊息時，會根據此檔案的設定回應對應的訊息。請使用 JSON 格式來設定。
+- `config/setting.json` 檔案，除了TOEKN使用字串外，其他請都使用整數：
 
   - `guild_id`：請在此處填入你的伺服器 ID。
   - `admin_roles`：請在此處填入管理員的身分組 ID，多個 ID 請使用逗號隔開。
