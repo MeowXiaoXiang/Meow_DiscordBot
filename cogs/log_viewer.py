@@ -10,7 +10,7 @@ from typing import List
 class log_viewer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.settings = json.load(open("setting.json", "r", encoding="utf8")) #讀取 setting.json
+        self.settings = json.load(open("config/setting.json", "r", encoding="utf8")) #讀取 setting.json
         self.admin_roles = self.settings['admin_roles']
 
     async def log_autocomplete(self, interaction: discord.Interaction, current: str) -> List[discord.app_commands.Choice[str]]:
