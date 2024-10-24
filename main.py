@@ -16,14 +16,9 @@ version = "v2.2"
 start_time = datetime.now()
 settings = json.load(open("config/setting.json", 'r', encoding='utf8')) # 讀取setting.json
 #------------------------------------------------------------------
-intents = discord.Intents.none()
-# 啟用需要的 Intents 設定成 True
-intents.guilds = True
+intents = discord.Intents.default()
 intents.members = True
-intents.messages = True
 intents.message_content = True
-intents.reactions = True
-intents.emojis_and_stickers = True
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"), intents=intents)
 #------------------------------------------------------------------
 bot.help_command = None
@@ -102,16 +97,16 @@ class ManagementCommand(commands.Cog):
             try:
                 await self.bot.load_extension(F'cogs.{extension}')
                 await interaction.response.send_message(embed=discord.Embed(title="已載入模組", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
-                logger.info(F"已載入：{extension}")
+                logger.info(f"已載入：{extension}")
             except commands.ExtensionAlreadyLoaded:
                 await interaction.response.send_message(embed=discord.Embed(title="警告：模組已經載入", description=f"模組 `{extension}` 已經載入過，請使用重新載入或卸載", color=0xffff00), ephemeral=True)
-                logger.warning(F"已經載入過：{extension}")
+                logger.warning(f"已經載入過：{extension}")
             except commands.ExtensionNotFound:
                 await interaction.response.send_message(embed=discord.Embed(title="錯誤：模組不存在", description=f"找不到指定的模組 `{extension}`請檢查是否存在", color=0xff0000), ephemeral=True)
-                logger.error(F"找不到模組：{extension}")
+                logger.error(f"找不到模組：{extension}")
             except Exception as e:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：載入模組時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
-                logger.error(F"未知錯誤：{e}\n{traceback.format_exc()}")
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：載入模組時發生未知錯誤", description=f"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
+                logger.error(f"未知錯誤：{e}\n{traceback.format_exc()}")
         else:
             await interaction.response.send_message(embed=discord.Embed(title="權限不足", description="本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
 
@@ -123,13 +118,13 @@ class ManagementCommand(commands.Cog):
             try:
                 await self.bot.unload_extension(F'cogs.{extension}')
                 await interaction.response.send_message(embed=discord.Embed(title="已卸載模組", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
-                logger.info(F"已卸載：{extension}")
+                logger.info(f"已卸載：{extension}")
             except commands.ExtensionNotLoaded:
                 await interaction.response.send_message(embed=discord.Embed(title="錯誤：模組尚未載入", description=f"請確認模組 `{extension}`已經載入", color=0xff0000), ephemeral=True)
-                logger.error(F"尚未載入：{extension}")
+                logger.error(f"尚未載入：{extension}")
             except Exception as e:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：卸載模組時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
-                logger.error(F"未知錯誤：{e}\n{traceback.format_exc()}")
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：卸載模組時發生未知錯誤", description=f"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
+                logger.error(f"未知錯誤：{e}\n{traceback.format_exc()}")
         else:
             await interaction.response.send_message(embed=discord.Embed(title="權限不足", description="本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
 
@@ -141,15 +136,15 @@ class ManagementCommand(commands.Cog):
             try:
                 await self.bot.reload_extension(F'cogs.{extension}')
                 await interaction.response.send_message(embed=discord.Embed(title="已重新載入模組", description=f"`{extension}`", color=0x00ff00), ephemeral=True)
-                logger.info(F"已重新載入：{extension}")
+                logger.info(f"已重新載入：{extension}")
             except commands.ExtensionNotLoaded:
                 await interaction.response.send_message(embed=discord.Embed(title="錯誤：模組尚未載入", description=f"請確認模組 `{extension}`已經載入", color=0xff0000), ephemeral=True)
-                logger.error(F"尚未載入：{extension}")
+                logger.error(f"尚未載入：{extension}")
             except Exception as e:
-                await interaction.response.send_message(embed=discord.Embed(title="錯誤：重新載入模組時發生未知錯誤", description=F"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
-                logger.error(F"未知錯誤：{e}\n{traceback.format_exc()}")
+                await interaction.response.send_message(embed=discord.Embed(title="錯誤：重新載入模組時發生未知錯誤", description=f"錯誤訊息:\n{e}", color=0xff0000), ephemeral=True)
+                logger.error(f"未知錯誤：{e}\n{traceback.format_exc()}")
         else:
-            await interaction.response.send_message(embed=discord.Embed(title="權限不足", description=F"本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
+            await interaction.response.send_message(embed=discord.Embed(title="權限不足", description=f"本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
 
     @discord.app_commands.command(name="機器人狀態", description="查看機器人狀態")
     async def status(self, interaction: discord.Interaction):

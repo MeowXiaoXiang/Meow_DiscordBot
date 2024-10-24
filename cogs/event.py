@@ -92,14 +92,14 @@ class event(commands.Cog):
                 return int(response.headers['Content-Length'])
             return None
         except Exception as e:
-            logger.error(F"Error in get_attachment_size: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in get_attachment_size: {e}\n{traceback.format_exc()}")
 
     def is_supported_format(self, url):
         try:
             filename = url.split('/')[-1].split('?')[0]
             return any(filename.lower().endswith(fmt) for fmt in self.supported_image_formats + self.supported_video_formats)
         except Exception as e:
-            logger.error(F"Error in is_supported_format: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in is_supported_format: {e}\n{traceback.format_exc()}")
             return False
 
     def file_embed(self, user, attachment, file_size):
@@ -111,7 +111,7 @@ class event(commands.Cog):
                 
             embed = discord.Embed(
                 title="檔案下載",
-                description=F"{user.name} 向您發送了一個檔案",
+                description=f"{user.name} 向您發送了一個檔案",
             )
             embed.set_author(name=user.name, icon_url=user.avatar.url)
             embed.add_field(
@@ -119,10 +119,10 @@ class event(commands.Cog):
                 value=f"[ :link: {attachment.filename}]({attachment.url})\n檔案大小：{file_size_str}",
                 inline=False
             )
-            embed.set_footer(text=F"發送時間：{self.time_utils.get_utc8_ch()}")
+            embed.set_footer(text=f"發送時間：{self.time_utils.get_utc8_ch()}")
             return embed
         except Exception as e:
-            logger.error(F"Error in file_embed: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in file_embed: {e}\n{traceback.format_exc()}")
 
     # ----------------------------------------------------------------
 
@@ -136,23 +136,23 @@ class event(commands.Cog):
     def log_private_message(self, msg):
         try:
             log_path = './message_log/對機器人私訊的訊息.log'
-            print(F"[私訊]{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
+            print(f"[私訊]{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
             with open(log_path, 'a', encoding='utf8') as fp:
-                fp.write(F"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
+                fp.write(f"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
         except Exception as e:
-            logger.error(F"Error in log_private_message: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in log_private_message: {e}\n{traceback.format_exc()}")
 
     def log_text_channel_message(self, msg):
         try:
             if msg.channel.id in self.settings['record_channels']:
                 log_path = f'./message_log/{msg.guild}-{msg.channel}.log'
-                print(F"[訊息紀錄中]{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說：\n{msg.content}\n")
+                print(f"[訊息紀錄中]{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說：\n{msg.content}\n")
                 with open(log_path, 'a', encoding='utf8') as fp:
-                    fp.write(F"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
+                    fp.write(f"{self.time_utils.get_utc8_ch()}{msg.author}說：{msg.content}\n")
             else:
-                print(F"{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說:{msg.content}\n")
+                print(f"{self.time_utils.get_utc8_ch()}[{msg.guild}-{msg.channel}]{msg.author}說:{msg.content}\n")
         except Exception as e:
-            logger.error(F"Error in log_text_channel_message: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in log_text_channel_message: {e}\n{traceback.format_exc()}")
 
     async def handle_mentions(self, msg):
         if self.bot.user in msg.mentions:
@@ -167,7 +167,7 @@ class event(commands.Cog):
                             self.timer_auto_reply = time.time()   
                             await msg.channel.send(self.auto_reply_message[key])
         except Exception as e:
-            logger.error(F"Error in process_auto_reply: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in process_auto_reply: {e}\n{traceback.format_exc()}")
 
     # 提取emoji_id的輔助函數
     def extract_emoji_id(self, target):
@@ -192,12 +192,12 @@ class event(commands.Cog):
                         if time.time() - self.timer_msg_emoji > int(self.settings['emoji_record_cooldown']):
                             self.timer_msg_emoji = time.time()
                             set_key(session, emoji_id, emoji_count + 1)
-                            print(F"{emoji_id} 表情 使用次數 + 1\n")
+                            print(f"{emoji_id} 表情 使用次數 + 1\n")
                         else:
                             set_key(session, emoji_id, 1)
-                            print(F"{emoji_id} 表情 第一次使用\n")
+                            print(f"{emoji_id} 表情 第一次使用\n")
         except Exception as e:
-            logger.error(F"Error in record_emoji_usage: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in record_emoji_usage: {e}\n{traceback.format_exc()}")
 
     # 訊息附加emoji_id紀錄使用次數
     @commands.Cog.listener()
@@ -216,12 +216,12 @@ class event(commands.Cog):
                         if time.time() - self.timer_reaction_add > int(self.settings['emoji_record_cooldown']):
                             self.timer_reaction_add = time.time()
                             set_key(session, emoji_id, emoji_count + 1)
-                            print(F"{emoji_id} 表情 使用次數 + 1 (訊息附加)\n")
+                            print(f"{emoji_id} 表情 使用次數 + 1 (訊息附加)\n")
                         else:
                             set_key(session, emoji_id, 1)
-                            print(F"{emoji_id} 表情 第一次使用 (訊息附加)\n")
+                            print(f"{emoji_id} 表情 第一次使用 (訊息附加)\n")
         except Exception as e:
-            logger.error(F"Error in on_raw_reaction_add: {e}\n{traceback.format_exc()}")
+            logger.error(f"Error in on_raw_reaction_add: {e}\n{traceback.format_exc()}")
 
     @discord.app_commands.command(name="設定聊天對象", description="此功能僅限機器人擁有者使用，以及僅限私聊使用，用來設定聊天對象，若不輸入將會重設")
     @discord.app_commands.describe(

@@ -59,6 +59,9 @@ class Common(commands.Cog):
                 )
                 return
 
+        # 使用 defer 來延遲回應，告知 Discord 操作正在進行中
+        await interaction.response.defer()
+
         if member:
             member = member
         elif user_id:
@@ -83,10 +86,11 @@ class Common(commands.Cog):
         b_avg //= num_pixels
         avg_color = (r_avg, g_avg, b_avg)
         color = discord.Color.from_rgb(*avg_color)
-        embed = discord.Embed(title=F"{member.name} 的頭貼", description=F"[ :link: [完整大圖連結]]({avatar_url})\n", color=color)
+        embed = discord.Embed(title=f"{member.name} 的頭貼", description=f"[ :link: [完整大圖連結]]({avatar_url})\n", color=color)
         embed.set_image(url=avatar_url)
-        await interaction.response.send_message(embed=embed)
 
+        # 發送最終的回應
+        await interaction.followup.send(embed=embed)
 
     @discord.app_commands.command(name="讓機器人朝用戶發送訊息", description="這功能可以讓你以機器人的名義來發送訊息給目標使用者")
     @discord.app_commands.describe(
@@ -99,8 +103,8 @@ class Common(commands.Cog):
             user = self.bot.get_user(int(user_id))
             await user.send(message)
             with open(self.log_path, 'a', encoding='utf8') as fp:
-                fp.write(F"{TimeUtils.get_utc8_ch()}{interaction.user}用機器人對使用者[{user.name}]說：{message}\n")
-            await interaction.response.send_message(F"機器人已發送訊息給 [{user.name}]", ephemeral=True)
+                fp.write(f"{TimeUtils.get_utc8_ch()}{interaction.user}用機器人對使用者[{user.name}]說：{message}\n")
+            await interaction.response.send_message(f"機器人已發送訊息給 [{user.name}]", ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(
                 embed=discord.Embed(
@@ -122,12 +126,12 @@ class Common(commands.Cog):
             await channel.send(message)
             with open(self.log_path, 'a', encoding='utf8') as fp:
                 fp.write(f"{TimeUtils.get_utc8_ch()}{interaction.user}用機器人對頻道 [{channel.name}] 說：{message}\n")
-            await interaction.response.send_message(F"機器人已發送訊息到 [{channel.name}]", ephemeral=True)
+            await interaction.response.send_message(f"機器人已發送訊息到 [{channel.name}]", ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(
                 embed=discord.Embed(
-                    title=F"機器人朝頻道 [{channel.name}] 發送訊息產生錯誤",
-                    description=F"錯誤訊息:{e}",
+                    title=f"機器人朝頻道 [{channel.name}] 發送訊息產生錯誤",
+                    description=f"錯誤訊息:{e}",
                     color=0xff0000
                 ), ephemeral=True
             )
@@ -149,7 +153,7 @@ class Common(commands.Cog):
                 target = keys[i]  # 使用索引來取得 key
                 response = self.auto_reply_data[target]  # 使用 key 取得 value
                 if re.match(r"(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?", response):
-                    response = F"[  :link: GIF或圖片]({response})"
+                    response = f"[  :link: GIF或圖片]({response})"
                 embed.add_field(name=target, value=response, inline=True)
             embed.set_footer(text="訊息帶有15秒冷卻時間")
             pages.append(embed)

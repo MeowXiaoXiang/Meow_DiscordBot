@@ -53,7 +53,7 @@ class Emoji_Pages(commands.Cog):
             field_value = '{:.2f}% (使用次數：{})'.format(usage_percentage, usage_count)
             embed.add_field(name=emoji, value=field_value, inline=True)
         
-        embed.set_footer(text=F"表情使用總計：{total_usage}")
+        embed.set_footer(text=f"表情使用總計：{total_usage}")
         return embed
     
     @discord.app_commands.command(name="表情符號統計資料", description="查看這個伺服器表情符號統計資料")
