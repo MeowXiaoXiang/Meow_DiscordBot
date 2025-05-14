@@ -146,47 +146,30 @@ class ManagementCommand(commands.Cog):
         else:
             await interaction.response.send_message(embed=discord.Embed(title="權限不足", description=f"本指令只提供給機器人擁有者", color=0xff0000), ephemeral=True)
 
-    @discord.app_commands.command(name="機器人狀態", description="查看機器人狀態")
+    @discord.app_commands.command(name="機器人狀態", description="查看機器人目前狀態")
     async def status(self, interaction: discord.Interaction):
-        latency_ms = round(self.bot.latency * 1000)
+        latency = round(self.bot.latency * 1000)
+        color = discord.Color.green() if latency < 100 else discord.Color.yellow() if latency < 200 else discord.Color.red()
 
-        # 根據延遲設置顏色
-        if latency_ms < 100:
-            embed_color = discord.Color.green()
-        elif latency_ms < 200:
-            embed_color = discord.Color.yellow()
-        else:
-            embed_color = discord.Color.red()
+        embed = discord.Embed(title="機器人狀態", description="目前狀態如下", color=color)
+        embed.add_field(name="延遲", value=f"{latency}ms", inline=True)
+        embed.add_field(name="指令數量", value=f"前綴: `{len(self.bot.commands)}`\t斜線: `{len(self.bot.tree.get_commands())}`", inline=True)
+        embed.add_field(name="WebSocket", value="已連接" if not self.bot.is_ws_ratelimited() else "受限", inline=True)
 
-        embed = discord.Embed(title="目前機器人的狀態", description="以下是機器人目前的一些狀態資訊", color=embed_color)
-        embed.add_field(name="目前延遲", value=f"{latency_ms}ms", inline=True)
-        # Add available commands (Text and Slash)
-        embed.add_field(name="可用(文字/斜線)指令數量", value=f"{len(self.bot.commands)}/{len(self.bot.tree.get_commands())}", inline=True)
-        # Add WebSocket connection status
-        embed.add_field(name="WebSocket 狀態", value="已連接" if not self.bot.is_ws_ratelimited() else "受限", inline=True)
+        target = interaction.guild.me if interaction.guild else self.bot.user
+        perms = [f"- {name}" for name, value in interaction.channel.permissions_for(target) if value]
+        embed.add_field(name=f"權限（{interaction.guild.name if interaction.guild else '私訊'}）", value="\n".join(perms[:10]) or "（無）", inline=False)
 
-        def add_field(name, values, inline=True):
-            if len(values) > 0:
-                for i in range(0, len(values), 10):
-                    embed.add_field(name=name if i == 0 else '\u200b', value="\n".join(values[i:i+10]), inline=inline)
-            else:
-                embed.add_field(name=name, value="目前沒有任何資訊", inline=inline)
+        cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
+        all_exts = [f[:-3] for f in os.listdir(cogs_dir) if f.endswith('.py')]
+        active_exts = [e.replace("cogs.", "") for e in self.bot.extensions]
+        embed.add_field(name="模組狀態", value="\n".join(f"- {e} {'✅' if e in active_exts else '❌'}" for e in all_exts), inline=False)
 
-        # Add permissions
-        perms = [f"- {name}" for name, value in interaction.channel.permissions_for(interaction.user) if value]
-        add_field("機器人目前擁有的權限", perms, inline=True)
-        # Add extensions
-        all_exts = [filename[:-3] for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'cogs')) if filename.endswith('.py')]
-        loaded_exts = [ext.replace('cogs.', '') for ext in self.bot.extensions]
-        exts = [f"- {ext} {'✅' if ext in loaded_exts else '❌'}" for ext in all_exts]
-        add_field("模組狀態", exts, inline=False)
-        # Add uptime
         embed.add_field(name="在線時間", value=f"<t:{int(start_time.timestamp())}:R>", inline=False)
-        # Add author
         embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.display_avatar.url)
-        # Add footer
-        embed.set_footer(text=f"目前 Discord Bot 的版本：{version}")
-        await interaction.response.send_message(embed=embed)
+        embed.set_footer(text=f"Discord Bot 版本：{version}")
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @bot.tree.command(name="重啟機器人", description="重新啟動機器人")
 async def restart_bot_command(interaction: discord.Interaction):
